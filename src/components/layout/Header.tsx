@@ -16,9 +16,43 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { signOut } from "@/app/actions/auth"
 
+import { cookies } from "next/headers"
+
+const TRANSLATIONS = {
+    en: {
+        trending: "Trending",
+        ingredients: "Ingredients",
+        home: "Home",
+        searchPlaceholder: "Search products...",
+        login: "Log in",
+        logout: "Log out",
+        subscribe: "Subscribe",
+        premium: "Premium Member",
+        profile: "Profile",
+        settings: "Settings",
+        billing: "Billing"
+    },
+    ar: {
+        trending: "عناية رائجة",
+        ingredients: "المكونات",
+        home: "الرئيسية",
+        searchPlaceholder: "ابحث عن منتجات...",
+        login: "تسجيل الدخول",
+        logout: "تسجيل الخروج",
+        subscribe: "اشتراك",
+        premium: "عضو مميز",
+        profile: "الملف الشخصي",
+        settings: "الإعدادات",
+        billing: "الفواتير"
+    }
+}
+
 export async function Header() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    const cookieStore = await cookies()
+    const lang = (cookieStore.get('NEXT_LOCALE')?.value || 'en') as keyof typeof TRANSLATIONS
+    const t = TRANSLATIONS[lang]
 
     // Get user initials for avatar
     const initials = user?.email?.substring(0, 2).toUpperCase() || "U"
@@ -39,13 +73,13 @@ export async function Header() {
             <div className="container mx-auto flex h-16 items-center px-4">
                 <div className="me-4 hidden md:flex">
                     <Link href="/" className="me-6 flex items-center space-x-2 rtl:space-x-reverse">
-                        <span className="hidden font-bold sm:inline-block text-primary text-xl">
+                        <span className={`hidden font-bold sm:inline-block text-primary text-xl ${lang === 'ar' ? 'font-arabic' : ''}`}>
                             BeautySearch
                         </span>
                     </Link>
                     <nav className="flex items-center space-x-6 rtl:space-x-reverse text-sm font-medium">
-                        <Link href="/search?q=trending" className="transition-colors hover:text-foreground/80 text-foreground/60">Trending</Link>
-                        <Link href="/ingredients" className="transition-colors hover:text-foreground/80 text-foreground/60">Ingredients</Link>
+                        <Link href="/search?q=trending" className="transition-colors hover:text-foreground/80 text-foreground/60">{t.trending}</Link>
+                        <Link href="/ingredients" className="transition-colors hover:text-foreground/80 text-foreground/60">{t.ingredients}</Link>
                     </nav>
                 </div>
                 <Sheet>
@@ -58,9 +92,9 @@ export async function Header() {
                     <SheetContent side="left" className="pr-0">
                         <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                         <nav className="flex flex-col space-y-4 mt-6">
-                            <Link href="/" className="font-bold">Home</Link>
-                            <Link href="/search?q=trending">Trending</Link>
-                            <Link href="/ingredients">Ingredients</Link>
+                            <Link href="/" className="font-bold">{t.home}</Link>
+                            <Link href="/search?q=trending">{t.trending}</Link>
+                            <Link href="/ingredients">{t.ingredients}</Link>
                         </nav>
                     </SheetContent>
                 </Sheet>
@@ -68,7 +102,7 @@ export async function Header() {
                     <div className="w-full flex-1 md:w-auto md:flex-none">
                         <div className="relative">
                             <Search className="absolute start-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Search products..." className="ps-8 h-9 md:w-[300px] lg:w-[400px] rounded-full bg-secondary" />
+                            <Input placeholder={t.searchPlaceholder} className="ps-8 h-9 md:w-[300px] lg:w-[400px] rounded-full bg-secondary" />
                         </div>
                     </div>
                     <nav className="flex items-center space-x-2 rtl:space-x-reverse">
@@ -89,25 +123,25 @@ export async function Header() {
                                             <p className="text-xs leading-none text-muted-foreground">
                                                 {user.email}
                                             </p>
-                                            {isPremium && <span className="text-xs text-green-500 font-bold mt-1">Premium Member</span>}
+                                            {isPremium && <span className="text-xs text-green-500 font-bold mt-1">{t.premium}</span>}
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem>
-                                        Profile
+                                        {t.profile}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        Billing
+                                        {t.billing}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        Settings
+                                        {t.settings}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem>
                                         <form action={signOut} className="w-full">
                                             <button type="submit" className="w-full text-start flex items-center">
                                                 <LogOut className="me-2 h-4 w-4" />
-                                                Log out
+                                                {t.logout}
                                             </button>
                                         </form>
                                     </DropdownMenuItem>
@@ -115,11 +149,15 @@ export async function Header() {
                             </DropdownMenu>
                         ) : (
                             <Link href="/login">
-                                <Button variant="ghost" size="sm">Log in</Button>
+                                <Button variant="ghost" size="sm">{t.login}</Button>
                             </Link>
                         )}
                         <LanguageToggle />
-                        {!isPremium && <Button size="sm" className="rounded-full">Subscribe</Button>}
+                        {!isPremium && (
+                            <Button size="sm" className="rounded-full px-6 font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg hover:shadow-rose-500/25 transition-all hover:scale-105">
+                                {t.subscribe}
+                            </Button>
+                        )}
                     </nav>
                 </div>
 

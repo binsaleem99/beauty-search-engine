@@ -16,15 +16,20 @@ export const metadata: Metadata = {
 
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { cookies } from "next/headers";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get('NEXT_LOCALE')?.value || 'en';
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
+
   return (
-    <html lang="en" dir="ltr">
-      <body className={`${inter.variable} ${ibmPlexSansArabic.variable} antialiased`}>
+    <html lang={lang} dir={dir}>
+      <body className={`${inter.variable} ${ibmPlexSansArabic.variable} antialiased font-sans`}>
         <div className="relative flex min-h-screen flex-col">
           <Header />
           <div className="flex-1">{children}</div>

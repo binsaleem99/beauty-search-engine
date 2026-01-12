@@ -2,20 +2,29 @@
 
 import { Button } from "@/components/ui/button"
 import { Globe } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 export function LanguageToggle() {
-    const [lang, setLang] = useState("en")
-
-    useEffect(() => {
-        // Sync with html dir attribute
-        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"
-        document.documentElement.lang = lang
-    }, [lang])
+    const router = useRouter()
 
     const toggleLang = () => {
-        setLang(current => current === "en" ? "ar" : "en")
+        const currentLang = document.documentElement.lang
+        const newLang = currentLang === "en" ? "ar" : "en"
+
+        // Set cookie
+        document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000`
+
+        // Update document immediately for speed
+        document.documentElement.lang = newLang
+        document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr"
+
+        // Refresh server components
+        router.refresh()
     }
+
+    // Determine current visual state (simpler to just check prop or cookie in real app, but this works for button text)
+    // We'll rely on server render for initial state, but for client button text:
+    const isArabic = typeof document !== 'undefined' && document.documentElement.lang === 'ar';
 
     return (
         <Button
@@ -25,7 +34,7 @@ export function LanguageToggle() {
             className="font-medium"
         >
             <Globe className="me-2 h-4 w-4" />
-            {lang === "en" ? "العربية" : "English"}
+            {isArabic ? "English" : "العربية"}
         </Button>
     )
 }
