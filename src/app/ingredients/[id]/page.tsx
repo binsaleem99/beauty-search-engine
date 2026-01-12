@@ -3,6 +3,9 @@
 import { useState, useEffect, use } from "react"
 import { PaywallModal } from "@/components/premium/PaywallModal"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function IngredientDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params) // Assuming id is needed for fetching ingredient details later
     const [showPaywall, setShowPaywall] = useState(false)

@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
+// Force dynamic rendering for admin area
+export const dynamic = 'force-dynamic';
+
 /**
  * Admin Layout - Protected Area
  * Only accessible by users whose email matches ADMIN_EMAIL env var
