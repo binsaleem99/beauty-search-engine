@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "./scripts/migrate.sh",
-    "db:setup": "tsx scripts/setup-db.ts",
-    "db:seed": "tsx scripts/seed-db.ts"
+    "db:setup": "node --loader ts-node/esm scripts/setup-db.ts",
+    "db:seed": "node --loader ts-node/esm scripts/seed-db.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
