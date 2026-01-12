@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS public.ingredients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name_en TEXT NOT NULL UNIQUE,
   name_ar TEXT,
-  slug TEXT UNIQUE,
   aliases TEXT[],
   category TEXT,
   benefits TEXT[],
@@ -71,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.retailers (
   name_ar TEXT,
   logo_url TEXT,
   base_url TEXT,
-  affiliate_network TEXT CHECK (affiliate_network IN ('arabclicks', 'amazon_associates', 'direct')),
+  affiliate_network TEXT,
   affiliate_param TEXT,
   commission_rate DECIMAL(5,2),
   is_active BOOLEAN DEFAULT true,
@@ -96,7 +95,8 @@ CREATE TABLE IF NOT EXISTS public.prices (
 -- Price history for tracking changes
 CREATE TABLE IF NOT EXISTS public.price_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  price_id UUID REFERENCES public.prices(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+  retailer_id UUID REFERENCES public.retailers(id) ON DELETE CASCADE,
   price DECIMAL(10,3) NOT NULL,
   recorded_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -117,9 +117,9 @@ CREATE TABLE IF NOT EXISTS public.price_alerts (
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
   retailer_id UUID REFERENCES public.retailers(id) ON DELETE SET NULL,
-  target_price DECIMAL(10,3) NOT NULL,
+  target_price DECIMAL(10,3),
   current_price DECIMAL(10,3) NOT NULL,
-  triggered BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
   triggered_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -26,9 +26,6 @@ CREATE INDEX IF NOT EXISTS idx_products_created_at
 CREATE INDEX IF NOT EXISTS idx_ingredients_name_en
   ON public.ingredients(name_en);
 
-CREATE INDEX IF NOT EXISTS idx_ingredients_slug
-  ON public.ingredients(slug);
-
 CREATE INDEX IF NOT EXISTS idx_ingredients_category
   ON public.ingredients(category);
 
@@ -40,9 +37,6 @@ CREATE INDEX IF NOT EXISTS idx_product_ingredients_ingredient
   ON public.product_ingredients(ingredient_id);
 
 -- Retailer indexes
-CREATE INDEX IF NOT EXISTS idx_retailers_slug
-  ON public.retailers(slug);
-
 CREATE INDEX IF NOT EXISTS idx_retailers_active
   ON public.retailers(is_active);
 
@@ -63,11 +57,17 @@ CREATE INDEX IF NOT EXISTS idx_prices_last_checked
   ON public.prices(last_checked DESC);
 
 -- Price history indexes
-CREATE INDEX IF NOT EXISTS idx_price_history_price
-  ON public.price_history(price_id);
+CREATE INDEX IF NOT EXISTS idx_price_history_product
+  ON public.price_history(product_id);
+
+CREATE INDEX IF NOT EXISTS idx_price_history_retailer
+  ON public.price_history(retailer_id);
 
 CREATE INDEX IF NOT EXISTS idx_price_history_recorded_at
   ON public.price_history(recorded_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_price_history_product_recorded
+  ON public.price_history(product_id, recorded_at DESC);
 
 -- Saved products indexes
 CREATE INDEX IF NOT EXISTS idx_saved_products_user
@@ -86,9 +86,9 @@ CREATE INDEX IF NOT EXISTS idx_price_alerts_user
 CREATE INDEX IF NOT EXISTS idx_price_alerts_product
   ON public.price_alerts(product_id);
 
-CREATE INDEX IF NOT EXISTS idx_price_alerts_triggered
-  ON public.price_alerts(triggered)
-  WHERE triggered = false;
+CREATE INDEX IF NOT EXISTS idx_price_alerts_active
+  ON public.price_alerts(is_active)
+  WHERE is_active = true;
 
 -- Search logs indexes
 CREATE INDEX IF NOT EXISTS idx_search_logs_user

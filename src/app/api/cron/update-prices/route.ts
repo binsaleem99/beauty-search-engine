@@ -223,7 +223,7 @@ async function checkPriceAlerts(
         `)
         .eq('product_id', productId)
         .eq('retailer_id', retailerId)
-        .eq('triggered', false)
+        .eq('is_active', true)
         .lte('target_price', newPrice); // Alert triggers when price drops below target
 
     if (error) {
@@ -237,12 +237,12 @@ async function checkPriceAlerts(
 
     console.log(`[CRON] Found ${alerts.length} price alerts triggered`);
 
-    // Mark alerts as triggered
+    // Mark alerts as triggered (deactivate and set timestamp)
     for (const alert of alerts) {
         await supabase
             .from('price_alerts')
             .update({
-                triggered: true,
+                is_active: false,
                 triggered_at: new Date().toISOString()
             })
             .eq('id', alert.id);

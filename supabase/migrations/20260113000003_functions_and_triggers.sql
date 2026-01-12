@@ -108,8 +108,8 @@ AS $$
 BEGIN
   -- Only log if price actually changed
   IF (TG_OP = 'UPDATE' AND OLD.price != NEW.price) OR TG_OP = 'INSERT' THEN
-    INSERT INTO public.price_history (price_id, price, recorded_at)
-    VALUES (NEW.id, NEW.price, NOW());
+    INSERT INTO public.price_history (product_id, retailer_id, price, recorded_at)
+    VALUES (NEW.product_id, NEW.retailer_id, NEW.price, NOW());
   END IF;
   RETURN NEW;
 END;
