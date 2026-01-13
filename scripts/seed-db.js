@@ -1,8 +1,13 @@
-import { Client } from 'pg';
-import dotenv from 'dotenv';
-import { faker } from '@faker-js/faker';
+/**
+ * Seed Database with Sample Products
+ * Run with: node scripts/seed-db.js
+ */
 
-// Load environment variables from .env.local
+const { Client } = require('pg');
+const dotenv = require('dotenv');
+const { faker } = require('@faker-js/faker');
+
+// Load environment variables
 dotenv.config({ path: '.env.local' });
 
 const retailersData = [
@@ -13,34 +18,34 @@ const retailersData = [
         logo_url: 'https://z.nooncdn.com/s/app/com/noon/images/logos/noon-black-on-yellow.svg',
         base_url: 'https://noon.com',
         affiliate_network: 'arabclicks',
-        commission_rate: 10.00
+        commission_rate: 8.00
     },
     {
-        name: 'amazon_ae',
+        name: 'amazon-ae',
         display_name_en: 'Amazon AE',
         display_name_ar: 'أمازون',
         logo_url: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
         base_url: 'https://amazon.ae',
         affiliate_network: 'amazon_associates',
-        commission_rate: 8.00
+        commission_rate: 3.00
     },
     {
         name: 'faces',
         display_name_en: 'Faces',
-        display_name_ar: 'وجوه',
+        display_name_ar: 'فيسز',
         logo_url: 'https://cdn.faces.com/assets/images/logo.svg',
         base_url: 'https://faces.com',
-        affiliate_network: 'direct',
-        commission_rate: 12.00
+        affiliate_network: 'arabclicks',
+        commission_rate: 10.00
     },
     {
-        name: 'sephora_me',
+        name: 'sephora',
         display_name_en: 'Sephora ME',
         display_name_ar: 'سيفورا',
         logo_url: 'https://www.sephora.ae/on/demandware.static/-/Sites-Sephora_UAE-Library/en_AE/v1646294726207/images/logo.svg',
         base_url: 'https://sephora.ae',
         affiliate_network: 'direct',
-        commission_rate: 12.00
+        commission_rate: 0.00
     }
 ];
 
@@ -65,7 +70,6 @@ const ingredientsList = [
     { name_en: 'Tea Tree Oil', name_ar: 'زيت شجرة الشاي', category: 'Anti-acne', benefits: ['Acne fighting', 'Antibacterial'] },
     { name_en: 'Squalane', name_ar: 'السكوالين', category: 'Emollient', benefits: ['Hydration', 'Barrier support'] },
     { name_en: 'Panthenol', name_ar: 'البانثينول', category: 'Soothing', benefits: ['Soothing', 'Hydration'] }
-    // Add more to reach 50 if needed, starting with 20 core ones for now (scaling to 50 with variations/others)
 ];
 
 // Generate more ingredients to reach 50
@@ -73,7 +77,7 @@ while (ingredientsList.length < 50) {
     const name = faker.commerce.productMaterial() + ' Extract';
     ingredientsList.push({
         name_en: name,
-        name_ar: name + ' (AR)', // Placeholder AR translation
+        name_ar: name + ' (AR)',
         category: 'Botanical',
         benefits: ['Antioxidant', 'Soothing']
     });
@@ -83,20 +87,11 @@ const brands = ['CeraVe', 'The Ordinary', "Paula's Choice", 'La Roche-Posay', 'C
 const categories = ['Moisturizer', 'Cleanser', 'Serum', 'Sunscreen', 'Toner', 'Mask'];
 
 async function seed() {
-    let connectionString = process.env.DATABASE_URL;
+    const connectionString = process.env.DATABASE_URL;
 
-    // Use derived string logic fallback if DATABASE_URL is somehow missing but components present
     if (!connectionString) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const dbPassword = process.env.SUPABASE_DB_PASSWORD;
-        if (supabaseUrl && dbPassword) {
-            const projectRef = supabaseUrl.split('//')[1].split('.')[0];
-            const dbHost = `db.${projectRef}.supabase.co`;
-            connectionString = `postgres://postgres:${dbPassword}@${dbHost}:5432/postgres`;
-        } else {
-            console.error('Missing DB connection info');
-            process.exit(1);
-        }
+        console.error('❌ Error: DATABASE_URL not found in .env.local');
+        process.exit(1);
     }
 
     const client = new Client({
@@ -106,23 +101,24 @@ async function seed() {
 
     try {
         await client.connect();
-        console.log('Connected to DB');
+        console.log('✅ Connected to database\n');
 
         // 1. Insert Retailers
-        console.log('Seeding Retailers...');
+        console.log('📦 Seeding Retailers...');
         const retailerIds = [];
         for (const retailer of retailersData) {
             const res = await client.query(`
-                INSERT INTO retailers (slug, name_en, name_ar, logo_url, base_url, affiliate_network, commission_rate)
+                INSERT INTO retailers (name, display_name_en, display_name_ar, logo_url, base_url, affiliate_network, commission_rate)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
-                ON CONFLICT (slug) DO UPDATE SET name_en = EXCLUDED.name_en
+                ON CONFLICT (name) DO UPDATE SET display_name_en = EXCLUDED.display_name_en
                 RETURNING id;
             `, [retailer.name, retailer.display_name_en, retailer.display_name_ar, retailer.logo_url, retailer.base_url, retailer.affiliate_network, retailer.commission_rate]);
             retailerIds.push(res.rows[0].id);
         }
+        console.log(`   ✅ ${retailersData.length} retailers added\n`);
 
         // 2. Insert Ingredients
-        console.log('Seeding Ingredients...');
+        console.log('🧪 Seeding Ingredients...');
         const ingredientIds = [];
         for (const ing of ingredientsList) {
             const res = await client.query(`
@@ -135,19 +131,24 @@ async function seed() {
             if (res.rows[0]) {
                 ingredientIds.push(res.rows[0].id);
             } else {
-                // Fetch existing id if conflict
+                // Fetch existing ID if conflict
                 const existing = await client.query('SELECT id FROM ingredients WHERE name_en = $1', [ing.name_en]);
-                ingredientIds.push(existing.rows[0].id);
+                if (existing.rows[0]) {
+                    ingredientIds.push(existing.rows[0].id);
+                }
             }
         }
+        console.log(`   ✅ ${ingredientsList.length} ingredients added\n`);
 
         // 3. Insert Products
-        console.log('Seeding Products...');
+        console.log('💄 Seeding Products (100)...');
+        let productsCreated = 0;
+
         for (let i = 0; i < 100; i++) {
             const brand = faker.helpers.arrayElement(brands);
             const category = faker.helpers.arrayElement(categories);
             const name_en = `${brand} ${faker.commerce.productAdjective()} ${category}`;
-            const name_ar = `${brand} ${category} (AR)`; // Placeholder
+            const name_ar = `${brand} ${category} (AR)`;
 
             const prodRes = await client.query(`
                 INSERT INTO products (name_en, name_ar, brand, category, image_url, description_en, description_ar, main_ingredients)
@@ -158,46 +159,71 @@ async function seed() {
                 name_ar,
                 brand,
                 category,
-                faker.image.urlLoremFlickr({ category: 'beauty' }),
+                `https://picsum.photos/seed/${i}/400/400`, // Placeholder images
                 faker.commerce.productDescription(),
-                'وصف المنتج بالعربية...',
-                [faker.helpers.arrayElement(ingredientsList).name_en]
+                'وصف المنتج بالعربية - وصف تفصيلي للمنتج',
+                null // Will link ingredients via product_ingredients table
             ]);
 
             const productId = prodRes.rows[0].id;
+            productsCreated++;
 
-            // Link Ingredients
+            // Link Ingredients (1-5 per product)
             const numIngredients = faker.number.int({ min: 1, max: 5 });
             const selectedIngredients = faker.helpers.arrayElements(ingredientIds, numIngredients);
+
             for (const ingId of selectedIngredients) {
                 await client.query(`
-                    INSERT INTO product_ingredients (product_id, ingredient_id, concentration_percentage)
+                    INSERT INTO product_ingredients (product_id, ingredient_id, concentration)
                     VALUES ($1, $2, $3)
                     ON CONFLICT DO NOTHING
-                `, [productId, ingId, faker.helpers.arrayElement([5.0, 10.0, 1.0, null])]);
+                `, [productId, ingId, faker.helpers.arrayElement(['5%', '10%', '1%', null])]);
             }
 
-            // 4. Insert Prices
+            // 4. Insert Prices (1-4 retailers per product)
             const numRetailers = faker.number.int({ min: 1, max: 4 });
             const selectedRetailers = faker.helpers.arrayElements(retailerIds, numRetailers);
 
             for (const retId of selectedRetailers) {
-                const price = parseFloat(faker.commerce.price({ min: 5, max: 50 }));
+                const price = parseFloat(faker.commerce.price({ min: 5, max: 50, dec: 3 }));
                 await client.query(`
-                    INSERT INTO prices (product_id, retailer_id, price, product_url, in_stock)
+                    INSERT INTO prices (product_id, retailer_id, price, url, in_stock)
                     VALUES ($1, $2, $3, $4, $5)
                     ON CONFLICT (product_id, retailer_id) DO NOTHING
-                `, [productId, retId, price, faker.internet.url(), faker.datatype.boolean()]);
+                `, [productId, retId, price, `https://example.com/product/${productId}`, faker.datatype.boolean()]);
+            }
+
+            // Progress indicator
+            if ((i + 1) % 20 === 0) {
+                console.log(`   ... ${i + 1}/100 products created`);
             }
         }
 
-        console.log('Seeding Complete!');
+        console.log(`   ✅ ${productsCreated} products created\n`);
+
+        // Summary
+        console.log('═══════════════════════════════════════');
+        console.log('🎉 Database Seeding Complete!');
+        console.log('═══════════════════════════════════════');
+        console.log(`✅ ${retailersData.length} retailers`);
+        console.log(`✅ ${ingredientsList.length} ingredients`);
+        console.log(`✅ ${productsCreated} products`);
+        console.log(`✅ ~${productsCreated * 2.5} prices (avg 2-3 per product)`);
+        console.log('═══════════════════════════════════════\n');
 
     } catch (err) {
-        console.error('Error seeding DB:', err);
+        console.error('❌ Error seeding database:', err);
+        process.exit(1);
     } finally {
         await client.end();
     }
 }
 
-seed();
+// Run seeding
+seed().then(() => {
+    console.log('✨ Seeding process completed successfully!\n');
+    process.exit(0);
+}).catch((error) => {
+    console.error('❌ Fatal error:', error);
+    process.exit(1);
+});

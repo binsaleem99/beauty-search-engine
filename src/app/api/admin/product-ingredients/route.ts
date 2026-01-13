@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             .insert({
                 product_id: body.product_id,
                 ingredient_id: body.ingredient_id,
-                concentration_percentage: body.concentration_percentage || null
+                concentration: body.concentration || null
             })
             .select()
             .single();

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
                 product_id: body.product_id,
                 retailer_id: body.retailer_id,
                 price: body.price,
-                product_url: body.product_url,
+                url: body.url,
                 in_stock: body.in_stock !== false,
                 last_checked: new Date().toISOString()
             })

@@ -28,8 +28,8 @@ export async function GET(
         ...price,
         // Generate affiliate URL using retailer slug and product URL
         affiliate_url: generateAffiliateUrl(
-            price.retailer.slug,
-            price.product_url,
+            price.retailer.name,
+            price.url,
             price.retailer.affiliate_network
         )
     })) || [];

@@ -31,8 +31,8 @@ export async function GET(
         product.prices = product.prices.map((price: any) => ({
             ...price,
             affiliate_url: generateAffiliateUrl(
-                price.retailer.slug,
-                price.product_url,
+                price.retailer.name,
+                price.url,
                 price.retailer.affiliate_network
             )
         }));

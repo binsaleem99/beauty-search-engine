@@ -57,7 +57,7 @@ export default function AdminProductsPage() {
         product_id: '',
         retailer_id: '',
         price: '',
-        product_url: '',
+        url: '',
         in_stock: true
     });
 
@@ -163,7 +163,7 @@ export default function AdminProductsPage() {
                     product_id: '',
                     retailer_id: '',
                     price: '',
-                    product_url: '',
+                    url: '',
                     in_stock: true
                 });
             } else {
@@ -491,8 +491,8 @@ export default function AdminProductsPage() {
                                 type="url"
                                 placeholder="Product URL"
                                 required
-                                value={priceForm.product_url}
-                                onChange={(e) => setPriceForm({ ...priceForm, product_url: e.target.value })}
+                                value={priceForm.url}
+                                onChange={(e) => setPriceForm({ ...priceForm, url: e.target.value })}
                                 className="w-full px-3 py-2 border rounded-lg"
                             />
                             <label className="flex items-center gap-2">

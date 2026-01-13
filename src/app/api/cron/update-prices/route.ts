@@ -170,8 +170,8 @@ async function checkRetailerPrice(price: any): Promise<number | null> {
     // PLACEHOLDER: This needs real implementation
     // For now, randomly simulate price changes for testing
 
-    const retailerSlug = price.retailer.slug;
-    const productUrl = price.product_url;
+    const retailerSlug = price.retailer.name;
+    const productUrl = price.url;
 
     console.log(`[CRON] Checking price for ${price.product.name_en} at ${retailerSlug}`);
 
@@ -273,7 +273,7 @@ async function checkPriceAlerts(
             // Get product URL for buy link
             const { data: price } = await supabase
                 .from('prices')
-                .select('product_url')
+                .select('url')
                 .eq('product_id', productId)
                 .eq('retailer_id', retailerId)
                 .single();
@@ -286,7 +286,7 @@ async function checkPriceAlerts(
                     oldPrice: alert.target_price,
                     newPrice: newPrice,
                     retailerName: retailer.name_en,
-                    retailerUrl: price.product_url
+                    retailerUrl: price.url
                 });
 
                 console.log(`[CRON] Email sent to ${alert.user.email}`);
