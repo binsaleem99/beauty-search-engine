@@ -155,13 +155,15 @@ function SearchContent() {
                                         {/* Hover Overlay Action */}
                                         <div className="absolute inset-0 bg-primary/90 opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" />
                                     </Link>
-                            {
-                                        results.length === 0 && (
-                                            <div className="col-span-full text-center py-20 text-muted-foreground">
-                                                No products found matching your criteria.
-                                            </div>
-                                        )
-                                    }
+                                ))
+                            )}
+
+                            {/* No Results Message */}
+                            {!loading && results.length === 0 && (
+                                <div className="col-span-full text-center py-20 text-muted-foreground">
+                                    No products found matching your criteria.
+                                </div>
+                            )}
                         </div>
                     )}
                 </main>
