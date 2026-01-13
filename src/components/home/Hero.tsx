@@ -61,7 +61,7 @@ export function Hero() {
                                 onChange={(e) => setQuery(e.target.value)}
                             />
                             <div className="absolute end-2">
-                                <Button size="lg" type="submit" className="rounded-full px-8 h-12 text-base font-bold shadow-lg bg-primary hover:bg-primary/90 transition-all">
+                                <Button size="lg" type="submit" className="rounded-full px-8 h-12 text-base font-bold shadow-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-rose-500/25 transition-all hover:scale-105">
                                     Search
                                 </Button>
                             </div>
